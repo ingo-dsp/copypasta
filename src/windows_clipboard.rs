@@ -13,9 +13,11 @@
 // limitations under the License.
 
 use clipboard_win::{get_clipboard_string, set_clipboard_string, Clipboard};
+use std::{io, mem, ptr};
+use std::os::raw::c_int;
 use clipboard_win::raw::{get_clipboard_data, register_format};
 use clipboard_win::utils::LockedData;
-use std::os::raw::c_int;
+
 use crate::common::{ClipboardProvider, Result};
 
 pub struct WindowsClipboardContext;
@@ -34,7 +36,6 @@ impl ClipboardProvider for WindowsClipboardContext {
     fn set_contents(&mut self, data: String) -> Result<()> {
         Ok(set_clipboard_string(&data)?)
     }
-
     fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
         let format = register_format(mime.into())?;
         let mut data = String::new();
@@ -63,29 +64,29 @@ fn set_data_at_format(_: &mut Clipboard, data: &str, format: u32) -> io::Result<
     debug_assert!(data.len() > 0);
 
     let size = unsafe {
-        MultiByteToWideChar(CP_UTF8, 0, data.as_ptr() as *const _, data.len() as c_int, std::ptr::null_mut(), 0)
+        MultiByteToWideChar(CP_UTF8, 0, data.as_ptr() as *const _, data.len() as c_int, ptr::null_mut(), 0)
     };
 
     if size == 0 {
-        return Err(std::io::Error::last_os_error())
+        return Err(io::Error::last_os_error())
     }
 
     let alloc_handle = unsafe { GlobalAlloc(GHND, mem::size_of::<u16>() * (size as SIZE_T + 1)) };
 
     if alloc_handle.is_null() {
-        Err(std::io::Error::last_os_error())
+        Err(io::Error::last_os_error())
     }
     else {
         unsafe {
             {
                 let (ptr, _lock) = LockedData::new(alloc_handle)?;
                 MultiByteToWideChar(CP_UTF8, 0, data.as_ptr() as *const _, data.len() as c_int, ptr.as_ptr(), size);
-                std::ptr::write(ptr.as_ptr().offset(size as isize), 0);
+                ptr::write(ptr.as_ptr().offset(size as isize), 0);
             }
             EmptyClipboard();
 
             if SetClipboardData(format, alloc_handle).is_null() {
-                let result = std::io::Error::last_os_error();
+                let result = io::Error::last_os_error();
                 GlobalFree(alloc_handle);
                 Err(result)
             }
@@ -99,7 +100,7 @@ fn set_data_at_format(_: &mut Clipboard, data: &str, format: u32) -> io::Result<
 // Copied from "clipboard-win" crate and modified to allow specifying a format parameter.
 // Note that we pass in the Clipboard as first parameter to keep the clipboard open.
 // TODO: Move this functionality back into the clipboard-win crate - for now we want to minimize the amount of forks we have.
-fn get_data_at_format(_: &mut Clipboard, storage: &mut String, format: u32) -> std::io::Result<()> {
+fn get_data_at_format(_: &mut Clipboard, storage: &mut String, format: u32) -> io::Result<()> {
     use winapi::um::stringapiset::WideCharToMultiByte;
     use winapi::um::winnls::CP_UTF8;
     use winapi::um::winbase::*;
@@ -110,9 +111,9 @@ fn get_data_at_format(_: &mut Clipboard, storage: &mut String, format: u32) -> s
         let (data_ptr, _guard) = LockedData::new(clipboard_data.as_ptr())?;
 
         let data_size = GlobalSize(clipboard_data.as_ptr()) as usize / std::mem::size_of::<u16>();
-        let storage_req_size = WideCharToMultiByte(CP_UTF8, 0, data_ptr.as_ptr(), data_size as c_int, std::ptr::null_mut(), 0, std::ptr::null(), std::ptr::null_mut());
+        let storage_req_size = WideCharToMultiByte(CP_UTF8, 0, data_ptr.as_ptr(), data_size as c_int, ptr::null_mut(), 0, ptr::null(), ptr::null_mut());
         if storage_req_size == 0 {
-            return Err(std::io::Error::last_os_error());
+            return Err(io::Error::last_os_error());
         }
 
         {
@@ -120,7 +121,7 @@ fn get_data_at_format(_: &mut Clipboard, storage: &mut String, format: u32) -> s
             let storage = storage.as_mut_vec();
             let storage_cursor = storage.len();
             let storage_ptr = storage.as_mut_ptr().add(storage_cursor) as *mut _;
-            WideCharToMultiByte(CP_UTF8, 0, data_ptr.as_ptr(), data_size as c_int, storage_ptr, storage_req_size, std::ptr::null(), std::ptr::null_mut());
+            WideCharToMultiByte(CP_UTF8, 0, data_ptr.as_ptr(), data_size as c_int, storage_ptr, storage_req_size, ptr::null(), ptr::null_mut());
             storage.set_len(storage_cursor + storage_req_size as usize);
         }
 
