@@ -18,6 +18,7 @@ use objc::{msg_send, sel, sel_impl};
 use objc_foundation::{INSArray, INSString};
 use objc_foundation::{NSArray, NSString};
 use objc_id::Id;
+use std::ops::Deref;
 
 use crate::common::*;
 
@@ -75,19 +76,36 @@ impl ClipboardProvider for OSXClipboardContext {
         }
     }
     fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
-        // TODO
-        println!(
-            "Attempting to get the contents of the clipboard, which hasn't yet been implemented \
-             on this platform."
-        );
-        Ok("".to_string())
+        autoreleasepool(|| unsafe {
+            let mime_str = NSString::from_str(mime);
+
+            let types: *mut NSArray<*mut NSString> = msg_send![self.pasteboard, types];
+            let has_str: BOOL = msg_send![types, containsObject: mime_str.deref()];
+
+            if has_str == NO {
+                return Err(format!("NSPasteboard#types doesn't contain {}", mime).into());
+            }
+
+            let text: *mut NSString =
+                msg_send![self.pasteboard, stringForType: mime_str.deref()];
+
+            if text.is_null() {
+                return Err(("NSPasteboard#stringForType returned null").into());
+            }
+
+            Ok((*text).as_str().to_owned())
+        })
     }
     fn set_mime_contents(&mut self, data: String, mime: &str) -> Result<()> {
-        // TODO
-        println!(
-            "Attempting to set the contents of the clipboard, which hasn't yet been implemented \
-             on this platform."
-        );
-        Ok(())
+        let _: usize = unsafe { msg_send![self.pasteboard, clearContents] };
+        let mime_str = NSString::from_str(&mime);
+        let mime_ptr: *const NSString = mime_str.deref();
+        let data_str = NSString::from_str(&data);
+        let success: bool = unsafe { msg_send![self.pasteboard, setString: data_str forType: mime_ptr] };
+        if success {
+            Ok(())
+        } else {
+            Err("NSPasteboard#writeObjects: returned false".into())
+        }
     }
 }
