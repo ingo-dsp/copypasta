@@ -55,6 +55,6 @@ impl ClipboardProvider for WindowsClipboardContext {
             "Attempting to set the contents of the clipboard, which hasn't yet been implemented \
              on this platform."
         );
-        Ok("".to_string())
+        Ok(())
     }
 }
