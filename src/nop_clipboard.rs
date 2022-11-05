@@ -38,4 +38,25 @@ impl ClipboardProvider for NopClipboardContext {
         );
         Ok(())
     }
+    fn get_mime_types(&mut self) -> Result<Vec<String>> {
+        println!(
+            "Attempting to get the mime-types of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok(vec![])
+    }
+    fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
+        println!(
+            "Attempting to get the contents of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok("".to_string())
+    }
+    fn set_mime_contents(&mut self, data: String, mime: &str) -> Result<()> {
+        println!(
+            "Attempting to set the contents of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok(())
+    }
 }

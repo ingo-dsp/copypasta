@@ -49,6 +49,31 @@ impl ClipboardProvider for Clipboard {
 
         Ok(())
     }
+
+    fn get_mime_types(&mut self) -> Result<Vec<String>> {
+        // TODO
+        println!(
+            "Attempting to get the mime-types of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok(vec![])
+    }
+    fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
+        // TODO
+        println!(
+            "Attempting to get the contents of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok("".to_string())
+    }
+    fn set_mime_contents(&mut self, data: String, mime: &str) -> Result<()> {
+        // TODO
+        println!(
+            "Attempting to set the contents of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok(())
+    }
 }
 
 impl ClipboardProvider for Primary {
@@ -59,6 +84,30 @@ impl ClipboardProvider for Primary {
     fn set_contents(&mut self, data: String) -> Result<()> {
         self.context.lock().unwrap().store_primary(data);
 
+        Ok(())
+    }
+    fn get_mime_types(&mut self) -> Result<Vec<String>> {
+        // TODO
+        println!(
+            "Attempting to get the mime-types of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok(vec![])
+    }
+    fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
+        // TODO
+        println!(
+            "Attempting to get the contents of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok("".to_string())
+    }
+    fn set_mime_contents(&mut self, data: String, mime: &str) -> Result<()> {
+        // TODO
+        println!(
+            "Attempting to set the contents of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
         Ok(())
     }
 }

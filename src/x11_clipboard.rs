@@ -69,4 +69,25 @@ where
     fn set_contents(&mut self, data: String) -> Result<()> {
         Ok(self.0.store(S::atom(&self.0.setter.atoms), self.0.setter.atoms.utf8_string, data)?)
     }
+
+    fn get_mime_types(&mut self) -> Result<Vec<String>> {
+        // TODO
+        println!(
+            "Attempting to get the mime-types of the clipboard, which hasn't yet been implemented \
+             on this platform."
+        );
+        Ok(vec![])
+    }
+    fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
+        Ok(String::from_utf8(self.0.load(
+            S::atom(&self.0.getter.atoms),
+            self.0.getter.get_atom(mime)?,
+            self.0.getter.atoms.property,
+            Duration::from_secs(3000),
+        )?)?)
+    }
+
+    fn set_mime_contents(&mut self, data: String, mime: &str) -> Result<()> {
+        Ok(self.0.store(S::atom(&self.0.setter.atoms), self.0.setter.get_atom(mime)?, data)?)
+    }
 }
