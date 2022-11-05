@@ -74,15 +74,6 @@ impl ClipboardProvider for OSXClipboardContext {
             Err("NSPasteboard#writeObjects: returned false".into())
         }
     }
-
-    fn get_mime_types(&mut self) -> Result<Vec<String>> {
-        // TODO
-        println!(
-            "Attempting to get the mime-types of the clipboard, which hasn't yet been implemented \
-             on this platform."
-        );
-        Ok(vec![])
-    }
     fn get_mime_contents(&mut self, mime: &str) -> Result<String> {
         // TODO
         println!(

@@ -23,8 +23,6 @@ pub trait ClipboardProvider: Send {
     fn get_contents(&mut self) -> Result<String>;
     /// Method to set the clipboard contents as a String
     fn set_contents(&mut self, _: String) -> Result<()>;
-    /// Method to get the mime types for which clipboard entries are available.
-    fn get_mime_types(&mut self) -> Result<Vec<String>>;
     /// Method to get the clipboard contents for a specified mime-type.
     fn get_mime_contents(&mut self, mime: &str) -> Result<String>;
     /// Method to set the clipboard contents for a specified mime-type.
