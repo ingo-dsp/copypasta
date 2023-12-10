@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.0
+
+### Changed
+
+- Use `String` in `ClipboardProvider::set_contents` for trait to be *object-safe*
+
+## 0.9.0
+
+- Bump minimum supported Rust version to `1.65.0`
+- Change `ClipboardProvider::set_contents` parameter type to `AsRef<str>`
+- Prefer file's path over text on macOS
+
+## 0.8.2
+
+### Packaging
+
+- Minimum rust version was bumped to `1.60.0`
+
+### Fixed
+
+- `x11_clipboard` was bumped to `0.7.0` droping `quick-xml` from the deps tree
+
+
 ## 0.8.1 
 
 ### Fixed
